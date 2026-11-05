@@ -1,11 +1,12 @@
 import Link from 'next/link';
 
 import { JsonForm } from '@/components/json-form';
+import { MoreOptions } from '@/components/more-options';
 import { TotalsTable } from '@/components/totals-table';
 import { getCart, MAX_QUANTITY } from '@/lib/cart';
 import { currentUser } from '@/lib/current-user';
 import { db } from '@/lib/db';
-import { formatEur, FREE_SHIPPING_FROM_CENTS } from '@/lib/pricing';
+import { formatEur } from '@/lib/pricing';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,9 +83,8 @@ export default async function CartPage() {
             </tbody>
           </table>
 
-          <section aria-labelledby="coupon-heading">
-            <h2 id="coupon-heading">Cupón de descuento</h2>
-            {cart.coupon === null ? (
+          {cart.coupon === null ? (
+            <MoreOptions label="Otras opciones">
               <JsonForm
                 action="/api/cart/coupon"
                 submitLabel="Aplicar cupón"
@@ -95,20 +95,20 @@ export default async function CartPage() {
                   <input name="code" autoComplete="off" />
                 </label>
               </JsonForm>
-            ) : (
-              <JsonForm action="/api/cart/coupon" method="DELETE" submitLabel="Quitar cupón">
-                <p>
-                  Cupón {cart.coupon.code} aplicado (−{cart.coupon.percentOff} %).
-                </p>
-              </JsonForm>
-            )}
-          </section>
+            </MoreOptions>
+          ) : (
+            <JsonForm action="/api/cart/coupon" method="DELETE" submitLabel="Quitar cupón">
+              <p>
+                Cupón {cart.coupon.code} aplicado (−{cart.coupon.percentOff} %).
+              </p>
+            </JsonForm>
+          )}
 
           <TotalsTable
             totals={cart.totals}
+            showShipping={false}
             {...(cart.coupon ? { couponCode: cart.coupon.code } : {})}
           />
-          <p>Envío gratis a partir de {formatEur(FREE_SHIPPING_FROM_CENTS)}.</p>
           <p>
             <Link href="/checkout">Ir a pagar</Link>
           </p>

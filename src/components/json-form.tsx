@@ -10,6 +10,8 @@ interface JsonFormProps {
   redirectTo?: string;
   submitLabel: string;
   className?: string;
+  /** Clears every field when the API rejects the submission. */
+  resetOnError?: boolean;
   children?: ReactNode;
 }
 
@@ -17,14 +19,14 @@ interface ErrorBody {
   error?: { message?: string };
 }
 
-// Posts the form fields as JSON and shows the API error without reloading,
-// so typed values stay in the form.
+// Posts the form fields as JSON and shows the API error without reloading.
 export function JsonForm({
   action,
   method = 'POST',
   redirectTo,
   submitLabel,
   className,
+  resetOnError = false,
   children,
 }: JsonFormProps) {
   const router = useRouter();
@@ -33,10 +35,11 @@ export function JsonForm({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setPending(true);
     setError(null);
     try {
-      const body = Object.fromEntries(new FormData(event.currentTarget));
+      const body = Object.fromEntries(new FormData(form));
       const response = await fetch(action, {
         method,
         headers: { 'content-type': 'application/json' },
@@ -45,6 +48,7 @@ export function JsonForm({
       const json = (await response.json().catch(() => ({}))) as ErrorBody & Record<string, unknown>;
       if (!response.ok) {
         setError(json.error?.message ?? 'Algo ha fallado. Inténtalo de nuevo.');
+        if (resetOnError) form.reset();
         return;
       }
       if (redirectTo !== undefined) {

@@ -6,7 +6,7 @@ export default function RegisterPage() {
   return (
     <>
       <h1>Crear cuenta</h1>
-      <JsonForm action="/api/auth/register" redirectTo="/" submitLabel="Crear cuenta">
+      <JsonForm action="/api/auth/register" redirectTo="/" submitLabel="Crear cuenta" resetOnError>
         <label>
           Nombre
           <input name="name" autoComplete="name" required maxLength={100} />
