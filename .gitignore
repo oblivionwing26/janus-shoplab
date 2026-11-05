@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# build output
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated Prisma client
+src/generated/
+
+# tooling caches
+coverage/
+.eslintcache
+
+# environment and secrets
+.env
+.env.*
+!.env.example
+
+# logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
