@@ -10,3 +10,29 @@
 - Docker Compose binds every port to `127.0.0.1` only.
 
 Status: early development (Janus roadmap step F0.7).
+
+## Run it
+
+```bash
+docker compose up -d --build --wait
+```
+
+Open <http://127.0.0.1:3100>. The `migrate` service applies migrations and seeds the database the
+first time (12 products, 3 coupons, 3 test users with orders). Start from scratch with
+`docker compose down -v`.
+
+Test users and their passwords are listed in [`prisma/seed.ts`](prisma/seed.ts). Coupons:
+`BIENVENIDA10`, `VERANO20` (active) and `CADUCADO15` (inactive). Payment is simulated: no card or
+bank data is ever requested.
+
+## Develop
+
+```bash
+pnpm install
+cp .env.example .env
+docker compose up -d --wait postgres
+pnpm db:migrate && pnpm db:seed
+pnpm dev                 # http://127.0.0.1:3100
+pnpm lint && pnpm typecheck && pnpm test
+pnpm test:integration    # needs the postgres service; uses the shoplab_test database
+```
