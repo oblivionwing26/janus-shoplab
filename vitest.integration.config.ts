@@ -13,6 +13,8 @@ export default defineConfig({
   test: {
     include: ['src/**/*.integration.test.ts'],
     globalSetup: ['src/test-support/integration-setup.ts'],
+    // Route handlers use the app's own db(); point it at the test database.
+    env: { DATABASE_URL: process.env.DATABASE_URL_TEST ?? '' },
     testTimeout: 15_000,
     hookTimeout: 60_000,
   },
