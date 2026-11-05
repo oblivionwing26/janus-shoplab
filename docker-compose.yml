@@ -1,0 +1,46 @@
+# ShopLab. Every port is bound to 127.0.0.1: this app is intentionally flawed.
+name: janus-shoplab
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: shoplab
+      POSTGRES_PASSWORD: shoplab
+      POSTGRES_DB: shoplab
+    ports:
+      - '127.0.0.1:55433:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U shoplab -d shoplab']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Applies migrations and seeds synthetic data (only on an empty database), then exits.
+  migrate:
+    build:
+      context: .
+      target: tools
+    environment:
+      DATABASE_URL: postgresql://shoplab:shoplab@postgres:5432/shoplab
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      DATABASE_URL: postgresql://shoplab:shoplab@postgres:5432/shoplab
+    ports:
+      - '127.0.0.1:3100:3100'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-data:

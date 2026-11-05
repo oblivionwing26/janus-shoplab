@@ -1,0 +1,144 @@
+// ShopLab data model. All data is synthetic (see prisma/seed.ts).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String
+  passwordHash String    @map("password_hash")
+  /// Default shipping address. Seeded users carry a unique canary value here.
+  address      String
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  sessions     Session[]
+  cart         Cart?
+  orders       Order[]
+  reviews      Review[]
+  redemptions  CouponRedemption[]
+
+  @@map("users")
+}
+
+model Session {
+  /// SHA-256 of the cookie token; the token itself is never stored.
+  tokenHash String   @id @map("token_hash")
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  slug        String      @unique
+  name        String
+  description String
+  priceCents  Int         @map("price_cents")
+  stock       Int
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+
+  @@map("products")
+}
+
+model Cart {
+  userId   String     @id @map("user_id")
+  couponId String?    @map("coupon_id")
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon   Coupon?    @relation(fields: [couponId], references: [id])
+  items    CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  userId    String  @map("user_id")
+  productId String  @map("product_id")
+  quantity  Int
+  cart      Cart    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([userId, productId])
+  @@map("cart_items")
+}
+
+model Coupon {
+  id          String             @id @default(uuid())
+  code        String             @unique
+  percentOff  Int                @map("percent_off")
+  active      Boolean            @default(true)
+  carts       Cart[]
+  redemptions CouponRedemption[]
+
+  @@map("coupons")
+}
+
+/// One redemption per user and coupon.
+model CouponRedemption {
+  couponId String @map("coupon_id")
+  userId   String @map("user_id")
+  orderId  Int    @unique @map("order_id")
+  coupon   Coupon @relation(fields: [couponId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+  order    Order  @relation(fields: [orderId], references: [id])
+
+  @@id([couponId, userId])
+  @@map("coupon_redemptions")
+}
+
+model Order {
+  /// Sequential on purpose: a realistic shop id that the IDOR in F0.7-C can enumerate.
+  id              Int               @id @default(autoincrement())
+  userId          String            @map("user_id")
+  shippingAddress String            @map("shipping_address")
+  paymentMethod   String            @map("payment_method")
+  subtotalCents   Int               @map("subtotal_cents")
+  discountCents   Int               @map("discount_cents")
+  shippingCents   Int               @map("shipping_cents")
+  totalCents      Int               @map("total_cents")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  user            User              @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  redemption      CouponRedemption?
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  orderId        Int     @map("order_id")
+  productId      String  @map("product_id")
+  name           String
+  unitPriceCents Int     @map("unit_price_cents")
+  quantity       Int
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product @relation(fields: [productId], references: [id])
+
+  @@id([orderId, productId])
+  @@map("order_items")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  userId    String   @map("user_id")
+  rating    Int
+  body      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([productId])
+  @@map("reviews")
+}
