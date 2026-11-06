@@ -15,6 +15,10 @@ presentation layer, so ShopLab's own tests keep passing.
 | UX-2 | Coupon field hidden behind an ambiguous link          | `src/app/cart/page.tsx`, `src/components/more-options.tsx`  |
 | UX-3 | Sign-up form clears every field when validation fails | `src/app/register/page.tsx`, `src/components/json-form.tsx` |
 
+**Branch `variant/manual-b`** (Janus F1.11, hand-made variant B): UX-1 and UX-2 are fixed on the cart
+page (shipping row and real total shown; coupon form visible under "¿Tienes un cupón?"). UX-3 is
+left as is, as a control. This branch is never merged into `main`.
+
 ---
 
 ## UX-1 · Shipping costs appear only at the last step
