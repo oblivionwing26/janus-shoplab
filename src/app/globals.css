@@ -113,6 +113,24 @@ fieldset {
   border-radius: 6px;
 }
 
+fieldset label.choice {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+fieldset label.choice input {
+  margin: 0;
+  padding: 0;
+}
+
+table + form {
+  margin-top: 16px;
+}
+
 button {
   font: inherit;
   padding: 8px 16px;

@@ -46,7 +46,7 @@ export default async function CheckoutPage() {
           <legend>Método de pago</legend>
           <p>Pago simulado: no se cobra nada ni se piden datos bancarios.</p>
           {Object.entries(PAYMENT_METHODS).map(([value, label], index) => (
-            <label key={value}>
+            <label key={value} className="choice">
               <input type="radio" name="paymentMethod" value={value} defaultChecked={index === 0} />
               {label}
             </label>
