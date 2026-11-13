@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { ZodError } from 'zod';
 
 import { db } from './db';
+import { enforceClientLimit } from './defenses';
 import { findSessionUser, SESSION_COOKIE, SESSION_TTL_MS } from './sessions';
 import { ShopError } from './shop-error';
 import type { PublicUser } from './users';
@@ -25,7 +26,12 @@ export function errorResponse(error: unknown): NextResponse {
   if (error instanceof ShopError) {
     return NextResponse.json(
       { error: { code: error.code, message: error.message } },
-      { status: error.status },
+      {
+        status: error.status,
+        ...(error.retryAfterSeconds === undefined
+          ? {}
+          : { headers: { 'retry-after': String(error.retryAfterSeconds) } }),
+      },
     );
   }
   if (error instanceof ZodError) {
@@ -38,9 +44,16 @@ export function errorResponse(error: unknown): NextResponse {
   );
 }
 
-/** Runs a JSON route handler, turning ShopError into its status code. */
-export async function handle(run: () => Promise<NextResponse>): Promise<NextResponse> {
+/**
+ * Runs a JSON route handler, turning ShopError into its status code. The per-client rate limit
+ * (F4.2, off unless configured) is applied first, to every route that goes through here.
+ */
+export async function handle(
+  request: NextRequest,
+  run: () => Promise<NextResponse>,
+): Promise<NextResponse> {
   try {
+    enforceClientLimit(request.headers);
     return await run();
   } catch (error) {
     return errorResponse(error);

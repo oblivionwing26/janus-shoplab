@@ -6,6 +6,7 @@ import { TotalsTable } from '@/components/totals-table';
 import { getCart } from '@/lib/cart';
 import { currentUser } from '@/lib/current-user';
 import { db } from '@/lib/db';
+import { stepUpRequired, verificationCodeFor } from '@/lib/defenses';
 import { PAYMENT_METHODS } from '@/lib/orders';
 
 export const dynamic = 'force-dynamic';
@@ -14,6 +15,12 @@ export default async function CheckoutPage() {
   const user = await currentUser();
   if (user === null) redirect('/login');
   const cart = await getCart(db(), user.id);
+  // The extra check at checkout (F4.2): off unless SHOPLAB_STEP_UP_CHECKOUT is set.
+  const account = await db().user.findUnique({
+    where: { id: user.id },
+    select: { createdAt: true },
+  });
+  const stepUp = account !== null && stepUpRequired(account.createdAt);
 
   if (cart.lines.length === 0) {
     return (
@@ -38,6 +45,16 @@ export default async function CheckoutPage() {
         redirectTo="/orders/{orderId}?placed=1"
         submitLabel="Confirmar pedido"
       >
+        {stepUp && (
+          <label>
+            Código de verificación
+            <input name="verificationCode" inputMode="numeric" autoComplete="off" required />
+            <span>
+              Para tu seguridad, escribe este código:{' '}
+              <strong>{verificationCodeFor(user.id)}</strong>
+            </span>
+          </label>
+        )}
         <label>
           Dirección de envío
           <textarea name="shippingAddress" rows={3} defaultValue={user.address} required />

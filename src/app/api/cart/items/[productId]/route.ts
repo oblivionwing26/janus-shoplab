@@ -12,7 +12,7 @@ interface Context {
 const bodySchema = z.object({ quantity: z.unknown() });
 
 export function PATCH(request: NextRequest, { params }: Context) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await requireUser(request);
     const { productId } = await params;
     const body = bodySchema.parse(await readJson(request));
@@ -22,7 +22,7 @@ export function PATCH(request: NextRequest, { params }: Context) {
 }
 
 export function DELETE(request: NextRequest, { params }: Context) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await requireUser(request);
     const { productId } = await params;
     await removeFromCart(db(), user.id, productId);

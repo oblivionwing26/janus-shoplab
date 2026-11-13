@@ -27,6 +27,22 @@ Test users and their passwords are listed in [`prisma/seed.ts`](prisma/seed.ts).
 `BIENVENIDA10`, `VERANO20` (active) and `CADUCADO15` (inactive). Payment is simulated: no card or
 bank data is ever requested.
 
+## Defenses (off by default)
+
+ShopLab can protect itself, so Janus can measure what a defense costs the people it is meant to
+protect. They are legitimate protections, not flaws, and every one is off unless its variable is
+set: with none set, ShopLab behaves exactly as before.
+
+| Variable                                   | What it does                                                                                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SHOPLAB_RATE_LIMIT_IP=<n>/<seconds>`      | At most `n` requests per client in the window, on every API route; past that, `429` with `Retry-After`.                                                                                                            |
+| `SHOPLAB_RATE_LIMIT_ACCOUNT=<n>/<seconds>` | At most `n` sign-in attempts per account (email) in the window; past that, `429`, even with the right password.                                                                                                    |
+| `SHOPLAB_STEP_UP_CHECKOUT=new-accounts     | all`                                                                                                                                                                                                               | Checkout asks for a four-digit code shown on the page. The API answers `403` without it. `new-accounts` asks only accounts younger than `SHOPLAB_STEP_UP_ACCOUNT_AGE_SECONDS` (default 86400). |
+| `SHOPLAB_TRUST_FORWARDED_FOR=1`            | Takes the client from `X-Forwarded-For`. Without it every request counts as one client, because ShopLab has no honest way to tell them apart. The Janus sandbox sets it to give each simulated visitor an address. |
+
+Every request counts, the refused ones too, so a client that keeps hammering stays blocked until it
+stops for a window. The counters live in the process's memory.
+
 ## Develop
 
 ```bash

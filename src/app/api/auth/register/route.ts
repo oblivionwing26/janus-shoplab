@@ -6,7 +6,7 @@ import { createSession } from '@/lib/sessions';
 import { registerUser } from '@/lib/users';
 
 export function POST(request: NextRequest) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await registerUser(db(), await readJson(request));
     const response = NextResponse.json({ user }, { status: 201 });
     setSessionCookie(response, await createSession(db(), user.id));

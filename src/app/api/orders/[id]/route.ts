@@ -10,7 +10,7 @@ interface Context {
 }
 
 export function GET(request: NextRequest, { params }: Context) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await requireUser(request);
     const id = Number((await params).id);
     const order = Number.isInteger(id) ? await findOrderForUser(db(), user.id, id) : null;

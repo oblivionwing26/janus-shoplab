@@ -9,7 +9,7 @@ interface Context {
 }
 
 export function POST(request: NextRequest, { params }: Context) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await requireUser(request);
     const { slug } = await params;
     await addReview(db(), user.id, slug, await readJson(request));

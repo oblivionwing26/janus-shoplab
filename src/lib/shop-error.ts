@@ -7,7 +7,9 @@ export type ShopErrorCode =
   | 'out_of_stock'
   | 'empty_cart'
   | 'coupon_invalid'
-  | 'coupon_used';
+  | 'coupon_used'
+  | 'rate_limited'
+  | 'step_up_required';
 
 const STATUS: Record<ShopErrorCode, number> = {
   invalid_input: 400,
@@ -19,6 +21,8 @@ const STATUS: Record<ShopErrorCode, number> = {
   empty_cart: 409,
   coupon_invalid: 422,
   coupon_used: 409,
+  rate_limited: 429,
+  step_up_required: 403,
 };
 
 /** An expected failure with a stable code and a message safe to show to the shopper. */
@@ -28,6 +32,8 @@ export class ShopError extends Error {
   constructor(
     readonly code: ShopErrorCode,
     message: string,
+    /** Seconds until a refused request may be tried again (sent as Retry-After). */
+    readonly retryAfterSeconds?: number,
   ) {
     super(message);
     this.name = 'ShopError';
