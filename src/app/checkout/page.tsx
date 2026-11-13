@@ -7,6 +7,7 @@ import { getCart } from '@/lib/cart';
 import { currentUser } from '@/lib/current-user';
 import { db } from '@/lib/db';
 import { PAYMENT_METHODS } from '@/lib/orders';
+import { formatEur } from '@/lib/pricing';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,16 @@ export default async function CheckoutPage() {
   return (
     <>
       <h1>Pago</h1>
+      <ul aria-label="Resumen del pedido">
+        {cart.lines.map((line) => (
+          <li key={line.productId}>
+            {line.quantity} × {line.name} — {formatEur(line.unitPriceCents * line.quantity)}
+          </li>
+        ))}
+      </ul>
+      <p>
+        <Link href="/cart">Modificar cantidades</Link>
+      </p>
       <TotalsTable
         totals={cart.totals}
         {...(cart.coupon ? { couponCode: cart.coupon.code } : {})}
