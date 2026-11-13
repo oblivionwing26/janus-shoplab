@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { JsonForm } from '@/components/json-form';
-import { MoreOptions } from '@/components/more-options';
 import { TotalsTable } from '@/components/totals-table';
 import { getCart, MAX_QUANTITY } from '@/lib/cart';
 import { currentUser } from '@/lib/current-user';
@@ -84,18 +83,16 @@ export default async function CartPage() {
           </table>
 
           {cart.coupon === null ? (
-            <MoreOptions label="Otras opciones">
-              <JsonForm
-                action="/api/cart/coupon"
-                submitLabel="Aplicar cupón"
-                className="inline-form"
-              >
-                <label>
-                  Código del cupón
-                  <input name="code" autoComplete="off" />
-                </label>
-              </JsonForm>
-            </MoreOptions>
+            <JsonForm
+              action="/api/cart/coupon"
+              submitLabel="Aplicar cupón"
+              className="inline-form"
+            >
+              <label>
+                Código del cupón
+                <input name="code" autoComplete="off" />
+              </label>
+            </JsonForm>
           ) : (
             <JsonForm action="/api/cart/coupon" method="DELETE" submitLabel="Quitar cupón">
               <p>
