@@ -8,7 +8,7 @@ import { handle, readJson, requireUser } from '@/lib/http';
 const bodySchema = z.object({ code: z.unknown() });
 
 export function POST(request: NextRequest) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await requireUser(request);
     const body = bodySchema.parse(await readJson(request));
     await applyCoupon(db(), user.id, body.code);
@@ -17,7 +17,7 @@ export function POST(request: NextRequest) {
 }
 
 export function DELETE(request: NextRequest) {
-  return handle(async () => {
+  return handle(request, async () => {
     const user = await requireUser(request);
     await removeCoupon(db(), user.id);
     return NextResponse.json({ ok: true });
