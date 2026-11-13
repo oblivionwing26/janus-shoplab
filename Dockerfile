@@ -24,6 +24,8 @@ ENV NODE_ENV=production PORT=3100 HOSTNAME=0.0.0.0
 RUN addgroup -S shoplab && adduser -S shoplab -G shoplab
 COPY --from=build --chown=shoplab:shoplab /app/.next/standalone ./
 COPY --from=build --chown=shoplab:shoplab /app/.next/static ./.next/static
+# Where Janus puts the ownership token it proves control with (see src/app/.well-known).
+RUN mkdir /app/.well-known && chown shoplab:shoplab /app/.well-known
 USER shoplab
 EXPOSE 3100
 HEALTHCHECK --interval=10s --timeout=3s --retries=6 \
